@@ -3,13 +3,14 @@ import gym_pathfinding
 
 from gym_pathfinding.games.grid_generation import generate_grid, MOUVEMENT
 from astar import astar
+from tqdm import tqdm
 import numpy as np
-
 import operator
+import itertools
 
 ACTION_SIZE = 4
 
-def generate_training_data(size, shape, *, grid_type="free"):
+def generate_training_data(size, shape, *, grid_type="free", verbose=False):
     """
     Arguments
     ---------
@@ -26,6 +27,8 @@ def generate_training_data(size, shape, *, grid_type="free"):
     start : (1, 1) player position
     action : (4) the action (in one hot shape)
     """
+    if verbose: progress_bar = tqdm(total=size)
+
     states = []
     goals = []
     starts = []
@@ -43,10 +46,13 @@ def generate_training_data(size, shape, *, grid_type="free"):
             states.append(grid)
             goals.append(goal_grid)
             starts.append(position)
-            actions.append(one_hot_value(ACTION_SIZE, action))
-            
+            actions.append(one_hot_value(ACTION_SIZE, action))            
+
+            if verbose : progress_bar.update(1)
+
             n += 1 
             if n >= size:
+                if verbose : progress_bar.close()
                 return states, goals, starts, actions
 
 # reversed MOUVEMENT dict
@@ -85,14 +91,20 @@ def main():
 
     parser = argparse.ArgumentParser(description='Generate training data (states, goals, starts, actions)')
     parser.add_argument('--out', '-o', type=str, default='./data/training_data.pkl', help='Path to save the training_data')
-    parser.add_argument('--size', '-s', type=int, default=1000, help='Number of training example')
+    parser.add_argument('--size', '-s', type=int, default=10000, help='Number of training example')
     parser.add_argument('--shape', type=int, default=[9, 9], nargs=2, help='Shape of the grid (e.g. --shape 9 9)')
     parser.add_argument('--grid_type', type=str, default='obstacle', help='Type of grid : "free", "obstacle" or "maze"')
     args = parser.parse_args()
 
-    training_data = generate_training_data(args.size, args.shape, grid_type=args.grid_type)
+    training_data = generate_training_data(args.size, args.shape, 
+        grid_type=args.grid_type, verbose=True
+    )
+
+    print("saving data into : {}".format(args.out))
 
     joblib.dump(training_data, args.out)
+
+    print("done")
 
 if __name__ == "__main__":
     main()
