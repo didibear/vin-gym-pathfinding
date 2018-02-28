@@ -12,6 +12,7 @@ CHANNEL_AXIS = 3
 
 def vin_model(n, k=20, conv_filters=150, Q_size=4):
     """
+    
     Input1 = (n, n), grid_state
     Input2 = (n, n), grid_goal
     Input3 = (1, 1), start
@@ -52,30 +53,32 @@ def conv2D_Q(Q_size, name):
     return Conv2D(Q_size, (3, 3), use_bias=False, padding="same", name=name)
 
 def extract_Q_channels(Q, position, n, Q_size):
-    """ Return position for channels
+    """ Return values at position for each channels
+
     Example
     -------
-    Q channels = [[8,9,10], [4,5,6]]
-    position = [2, 1]
-    result = [10, 5]
+    >>> Q channels = [
+        [[1,2,3],  [[9,8,7],
+         [4,5,6],   [6,5,4], 
+         [7,8,9]],  [3,2,1]],
+    ]
+    >>> position = (0, 1)
+    >>> result = [2, 8]
     """
     def extract_position(inputs):
-        Q = inputs[0]
-        pos = inputs[1]
+        Q, pos = inputs
         w = K.one_hot(pos[:, 0] + n * pos[:, 1], n * n) # (None, n * n)
         return K.transpose(K.sum(w * K.permute_dimensions(Q, (1, 0, 2)), axis=2))
 
     Q = Lambda(lambda x: K.permute_dimensions(x, (0, 3, 1, 2)), output_shape=(Q_size, n, n))(Q)
     Q = Reshape((Q_size, n * n))(Q)
+    return Lambda(extract_position, output_shape=(Q_size,))([Q, position])
 
-    return merge([Q, position], mode=extract_position, output_shape=(Q_size,))
-
-
-if __name__ == "__main__":
+def main():
     from keras.utils import plot_model
     model = vin_model(16, k=20)
     model.summary()
     plot_model(model, to_file='model.png', show_shapes=True)
 
-
-
+if __name__ == "__main__":
+    main()
