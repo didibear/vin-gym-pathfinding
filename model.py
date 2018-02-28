@@ -41,7 +41,7 @@ def vin_model(n, k=20, conv_filters=150, Q_size=4):
     Q = conv2D_Q(Q_size, "Q{}".format(k))(Q)
 
     Q_out = extract_Q_channels(Q, position, n, Q_size)
-    out = Dense(Q_size, activation='softmax', bias=False)(Q_out)
+    out = Dense(Q_size, activation='softmax', use_bias=False)(Q_out)
 
     return Model(inputs=[image, reward, position], outputs=out)
 

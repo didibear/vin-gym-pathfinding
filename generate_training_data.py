@@ -7,6 +7,8 @@ import numpy as np
 
 import operator
 
+ACTION_SIZE = 4
+
 def generate_training_data(size, shape, *, grid_type="free"):
     """
     Arguments
@@ -41,7 +43,7 @@ def generate_training_data(size, shape, *, grid_type="free"):
             states.append(grid)
             goals.append(goal_grid)
             starts.append(position)
-            actions.append(action)
+            actions.append(one_hot_value(ACTION_SIZE, action))
             
             n += 1 
             if n >= size:
@@ -71,6 +73,10 @@ def create_goal_grid(shape, goal):
     goal_grid[goal] = 1
     return goal_grid
 
+def one_hot_value(size, value):
+    one_hot = np.zeros((size))
+    one_hot[value] = 1
+    return one_hot
 
 
 def main():
@@ -79,7 +85,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='Generate training data (states, goals, starts, actions)')
     parser.add_argument('--out', '-o', type=str, default='./data/training_data.pkl', help='Path to save the training_data')
-    parser.add_argument('--size', '-s', type=int, default=10000, help='Number of training example')
+    parser.add_argument('--size', '-s', type=int, default=1000, help='Number of training example')
     parser.add_argument('--shape', type=int, default=[9, 9], nargs=2, help='Shape of the grid (e.g. --shape 9 9)')
     parser.add_argument('--grid_type', type=str, default='obstacle', help='Type of grid : "free", "obstacle" or "maze"')
     args = parser.parse_args()
