@@ -1,6 +1,3 @@
-
-#!/usr/bin/env python
-#coding:utf-8
 from keras.models import Model
 from keras.layers import merge
 import keras.backend as K
@@ -12,7 +9,6 @@ CHANNEL_AXIS = 3
 
 def vin_model(n, k=20, conv_filters=150, Q_size=4):
     """
-    
     Input1 = (n, n), grid_state
     Input2 = (n, n), grid_goal
     Input3 = (1, 1), start
@@ -76,7 +72,7 @@ def extract_Q_channels(Q, position, n, Q_size):
 
 def main():
     from keras.utils import plot_model
-    model = vin_model(16, k=20)
+    model = vin_model(9, k=1)
     model.summary()
     plot_model(model, to_file='model.png', show_shapes=True)
 
