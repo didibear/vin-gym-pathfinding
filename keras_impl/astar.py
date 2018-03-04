@@ -3,13 +3,12 @@
 
 import numpy
 from heapq import heappush, heappop
+from gym_pathfinding.games.gridworld import MOUVEMENT
 
 def heuristic(a, b):
     return (b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2
 
 def astar(grid, start, goal):
-
-    neighbors = [(0,1),(0,-1),(1,0),(-1,0)]
 
     close_set = set()
     came_from = {}
@@ -32,7 +31,7 @@ def astar(grid, start, goal):
             return data[::-1]
 
         close_set.add(current)
-        for i, j in neighbors:
+        for i, j in MOUVEMENT:
             neighbor = current[0] + i, current[1] + j            
             tentative_g_score = gscore[current] + heuristic(current, neighbor)
             if 0 <= neighbor[0] < grid.shape[0]:

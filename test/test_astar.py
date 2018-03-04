@@ -3,14 +3,14 @@ import gym_pathfinding
 import operator
 from time import sleep
 
-from gym_pathfinding.games.grid_generation import generate_grid, MOUVEMENT
+from gym_pathfinding.games.gridworld import generate_grid, MOUVEMENT
 from astar import astar
 
 ACTION = {mouv: action for action, mouv in dict(enumerate(MOUVEMENT)).items()}
 env = gym.make('pathfinding-obstacle-25x25-v0')
 # env.seed(5) # full deterministic env
 
-for episode in range(10):
+for episode in range(20):
     s = env.reset()
     path = astar(env.game.grid, env.game.player, env.game.target)
     

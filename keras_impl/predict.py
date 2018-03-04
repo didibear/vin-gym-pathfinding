@@ -4,6 +4,8 @@ from time import sleep
 from model import vin_model
 import numpy as np
 import argparse
+import random
+from itertools import permutations
 
 def main():
     parser = argparse.ArgumentParser(description='VIN')
@@ -11,41 +13,31 @@ def main():
     args = parser.parse_args()
 
     env = gym.make('pathfinding-free-9x9-v0')
+    
 
-    k = 20
+    k = 10
     model = vin_model(n=9, k=k, Q_size=4)
     model.load_weights(args.model)
 
-    for episode in range(5):
+    actions = (2, 3, 0, 1)
+    for episode in range(10):
+        env.seed(episode)
         state = env.reset()
 
-        for timestep in range(10):
+        for timestep in range(20):
 
             state, goal, start = parse_state(state)
 
             action_probabilities = model.predict([np.array([state]), np.array([goal]), np.array(start)])
-            print(action_probabilities)
-            action = np.argmax(action_probabilities)
 
-            if action == 0:
-                action = 1
-            elif action == 1:
-                action = 0
-            elif action == 2:
-                action = 3
-            elif action == 3:
-                action = 2
-            
-            
-            # reward = get_layer_output(model, 'reward', im_ary)
-            # value = get_layer_output(model, 'value{}'.format(k), im_ary)
-            # reward = np.reshape(reward, state.shape)
-            # value = np.reshape(value, state.shape)
+            # if (random.random() < 0.1):
+                # action = env.action_space.sample()
+            # else :
+            action = np.argmax(action_probabilities)
             
             env.render()
-            sleep(0.2)
-            state, reward, done, _ = env.step(action)
-
+            sleep(0.05)
+            state, reward, done, _ = env.step(actions[action])
             if done:
                 break
 

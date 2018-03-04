@@ -16,7 +16,7 @@ def main():
     parser.add_argument('--save', '-s', type=str, default="./model/weights-checkpoint.h5", help='File to save the weights')
     parser.add_argument('--load', '-l', type=str, default="./model/weights-checkpoint.h5", help='File to load the weights')
     args = parser.parse_args()
-
+  
     if not os.path.exists(os.path.dirname(args.save)):
         print("Error : file cannot be created (need folders) : " + args.save)
         return
@@ -25,7 +25,7 @@ def main():
     states, goals, starts, actions = joblib.load(args.data)
 
     print("create model...")
-    model = vin_model(states[0].shape[0], k=20, Q_size=actions[0].shape[0])
+    model = vin_model(states[0].shape[0], k=10, Q_size=actions[0].shape[0])
     model.compile(optimizer=Adam(), loss='categorical_crossentropy', metrics=['accuracy'])
 
     if os.path.isfile(args.load):
@@ -35,7 +35,7 @@ def main():
     
     print("start training...")
     model.fit([np.array(states), np.array(goals), np.array(starts)], np.array(actions),
-        validation_split=0.2,
+        validation_split=0.1,
         batch_size=args.batchsize,
         epochs=args.epoch,
         callbacks=[checkpoint]
