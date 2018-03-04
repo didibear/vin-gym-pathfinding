@@ -19,8 +19,8 @@ def attention(tensor, params):
 
 def VIN(X, S1, S2, *, k, ch_i, ch_h, ch_q):
     """
-    X : (?, m, n, 2) - stack of state and goal
-        state (m, n) = grid with 1 and 0 ;
+    X : (?, m, n, 2) - stack of gridworld and goal
+        gridworld (m, n) = grid with 1 and 0 ;
         goal (m, n) = grid with 10 at goal position
     S1 : list of vertical position of the player
     S2 : list of horizontal position of the player
@@ -30,28 +30,8 @@ def VIN(X, S1, S2, *, k, ch_i, ch_h, ch_q):
     ch_h: Channels in initial hidden layer
     ch_q: Channels in q layer (~actions)
     """
-    h = tf.layers.conv2d(inputs=X, 
-                         filters=ch_h, 
-                         kernel_size=[3, 3], 
-                         strides=[1, 1], 
-                         padding='same', 
-                         activation=None, 
-                         use_bias=True, 
-                         kernel_initializer=tf.truncated_normal_initializer(stddev=0.01), 
-                         bias_initializer=tf.zeros_initializer(), 
-                         name='h0',
-                         reuse=None)
-    r = tf.layers.conv2d(inputs=h, 
-                         filters=1, 
-                         kernel_size=[3, 3],  
-                         strides=[1, 1], 
-                         padding='same', 
-                         activation=None, 
-                         use_bias=False,
-                         kernel_initializer=tf.truncated_normal_initializer(stddev=0.01), 
-                         bias_initializer=None,
-                         name='r',
-                         reuse=None)
+    h = conv2d(inputs=X, filters=ch_h, name='h0', use_bias=True)
+    r = conv2d(inputs=h, filters=1, name='r')
     
     # Add collection of reward image
     tf.add_to_collection('r', r)
@@ -60,34 +40,13 @@ def VIN(X, S1, S2, *, k, ch_i, ch_h, ch_q):
     v = tf.zeros_like(r)
 
     rv = tf.concat([r, v], axis=3)
-    q = tf.layers.conv2d(inputs=rv, 
-                         filters=ch_q, 
-                         kernel_size=[3, 3], 
-                         strides=[1, 1], 
-                         padding='same', 
-                         activation=None, 
-                         use_bias=False,
-                         kernel_initializer=tf.truncated_normal_initializer(stddev=0.01), 
-                         bias_initializer=None,
-                         name='q',
-                         reuse=None) # Initial set before sharing weights
+    q = conv2d(inputs=rv, filters=ch_q, name='q', reuse=None)  # Initial set before sharing weights
     v = tf.reduce_max(q, axis=3, keep_dims=True, name='v')
 
     # K iterations of VI module
     for i in range(0, k - 1):
         rv = tf.concat([r, v], axis=3)
-    
-        q = tf.layers.conv2d(inputs=rv, 
-                             filters=ch_q, 
-                             kernel_size=[3, 3], 
-                             strides=[1, 1], 
-                             padding='same', 
-                             activation=None, 
-                             use_bias=False,
-                             kernel_initializer=tf.truncated_normal_initializer(stddev=0.01), 
-                             bias_initializer=None,
-                             name='q',
-                             reuse=True) # Sharing weights
+        q = conv2d(inputs=rv, filters=ch_q, name='q', reuse=True) # Sharing weights
         v = tf.reduce_max(q, axis=3, keep_dims=True, name='v')
 
         
@@ -96,29 +55,35 @@ def VIN(X, S1, S2, *, k, ch_i, ch_h, ch_q):
         
     # Do one last convolution
     rv = tf.concat([r, v], axis=3)
-    q = tf.layers.conv2d(inputs=rv, 
-                         filters=ch_q, 
-                         kernel_size=[3, 3], 
-                         strides=[1, 1], 
-                         padding='same', 
-                         activation=None, 
-                         use_bias=False,
-                         kernel_initializer=tf.truncated_normal_initializer(stddev=0.01), 
-                         bias_initializer=None,
-                         name='q',
-                         reuse=True) # Sharing weights
+    q = conv2d(inputs=rv, filters=ch_q, name='q', reuse=True) # Sharing weights
 
     # Attention model
     q_out = attention(tensor=q, params=[S1, S2])
 
     # Final Fully Connected layer
-    logits = tf.layers.dense(inputs=q_out, 
-                             units=8, 
-                             activation=None, 
-                             use_bias=False, 
-                             kernel_initializer=tf.truncated_normal_initializer(stddev=0.01),  
-                             name='logits')
-
+    logits = tf.layers.dense(
+        inputs=q_out, 
+        units=8, 
+        activation=None, 
+        use_bias=False, 
+        kernel_initializer=tf.truncated_normal_initializer(stddev=0.01),  
+        name='logits'
+    )
     prob_actions = tf.nn.softmax(logits, name='probability_actions')
     
     return logits, prob_actions
+
+def conv2d(*, inputs, filters, name, use_bias=False, reuse=False):
+    return tf.layers.conv2d(
+        inputs=inputs, 
+        filters=filters, 
+        kernel_size=[3, 3], 
+        strides=[1, 1], 
+        padding='same', 
+        activation=None, 
+        kernel_initializer=tf.truncated_normal_initializer(stddev=0.01), 
+        use_bias=use_bias,
+        bias_initializer=tf.zeros_initializer() if use_bias else None,
+        name=name,
+        reuse=reuse
+    )
