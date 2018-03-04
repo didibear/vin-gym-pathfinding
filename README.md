@@ -10,7 +10,7 @@ Keras implementation inspired from [vin-keras](https://github.com/neka-nat/vin-k
 
 ## Reference
 
-[VIN original implementation](https://github.com/avivt/VIN)
-[VIN_TensorFlow](https://github.com/zuoxingdong/VIN_TensorFlow)
-[vin-keras implementation](https://github.com/neka-nat/vin-keras)
+- [VIN original implementation](https://github.com/avivt/VIN)
+- [VIN_TensorFlow](https://github.com/zuoxingdong/VIN_TensorFlow)
+- [vin-keras implementation](https://github.com/neka-nat/vin-keras)
 
