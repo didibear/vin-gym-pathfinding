@@ -8,19 +8,19 @@ from model import VIN
 def main():
 
     # Input tensor: Stack obstacle image and goal image, i.e. ch_i = 2
-    X = tf.placeholder(tf.float32, shape=[None, args.imsize, args.imsize, args.ch_i], name='X')
+    X = tf.placeholder(tf.float32, shape=[None, 9, 9, 2], name='X')
     S1 = tf.placeholder(tf.int32, shape=[None], name='S1') # vertical positions
     S2 = tf.placeholder(tf.int32, shape=[None], name='S2') # horizontal positions
 
     # VIN model
-    _, prob_actions = VIN(X, S1, S2, k=10, ch_i=2, ch_h=150, ch_q=10)
+    _, prob_actions = VIN(X, S1, S2, k=10, ch_i=2, ch_h=150, ch_q=4)
 
 
     saver = tf.train.Saver()
     with tf.Session() as sess:
         saver.restore(sess, "./model/weights.ckpt")
 
-        env = gym.make('pathfinding-free-9x9-v0')
+        env = gym.make('pathfinding-obstacle-9x9-v0')
 
         dones = 0
         actions = (1, 0, 3, 2) # actions are shifted
@@ -47,10 +47,9 @@ def main():
                 if done:
                     dones += 1
                     break
-
-        print("accuracy : {}/{}".format(dones, episodes))
         env.close()
 
+        print("accuracy : {}/{}".format(dones, episodes))
 
 def parse_state(state):
     goal = np.argwhere(state == 2)
@@ -68,4 +67,3 @@ def create_goal_grid(shape, goal):
 
 if __name__ == "__main__":
     main()
-    

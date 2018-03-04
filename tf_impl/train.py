@@ -59,8 +59,9 @@ def main():
     saver = tf.train.Saver()
     with tf.Session() as sess:
         # Intialize all variables / weights
-        if os.path.isfile(args.load):
+        if loadfile_exists(args.load):
             saver.restore(sess, args.load)
+            print("weights loaded")
         else:
             sess.run(tf.global_variables_initializer())
 
@@ -124,6 +125,12 @@ def train_or_eval(sess, dataset, args, feed_ops, eval_ops):
         
     return total_err/total_examples, total_loss/total_examples
         
+def loadfile_exists(filepath):
+    filename = os.path.basename(filepath)
+    for file in os.listdir(os.path.dirname(filepath)):
+        if file.startswith(filename):
+            return True
+    return False
 
 if __name__ == "__main__":
     main()
