@@ -5,8 +5,8 @@ Use the tensorflow implementation, the keras one doesn't work well.
 
 ## Information
 
-Tensorflow implementation inspired from [VIN_TensorFlow](https://github.com/zuoxingdong/VIN_TensorFlow)
-Keras implementation inspired from [vin-keras](https://github.com/neka-nat/vin-keras)
+- Tensorflow implementation inspired from [VIN_TensorFlow](https://github.com/zuoxingdong/VIN_TensorFlow)
+- Keras implementation inspired from [vin-keras](https://github.com/neka-nat/vin-keras)
 
 ## Reference
 
