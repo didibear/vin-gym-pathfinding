@@ -23,7 +23,6 @@ def main():
         env = gym.make('pathfinding-obstacle-9x9-v0')
 
         dones = 0
-        actions = (1, 0, 3, 2) # actions are shifted
         episodes = 100
         for episode in range(episodes):
             print(episode, end="\r")
@@ -33,16 +32,16 @@ def main():
                 # env.render()
                 # sleep(0.05)
 
-                grid, goal, position = parse_state(state)
+                grid, goal_grid, position = parse_state(state)
 
                 actions_probabilities = sess.run([prob_actions], feed_dict={
-                    X: [np.stack([grid, goal], axis=2)],
+                    X: [np.stack([grid, goal_grid], axis=2)],
                     S1: [position[0]], 
                     S2: [position[1]]
                 })
                 
                 action = np.argmax(actions_probabilities)
-                state, reward, done, _ = env.step(actions[action])
+                state, reward, done, _ = env.step(action)
 
                 if done:
                     dones += 1
@@ -52,13 +51,13 @@ def main():
         print("accuracy : {}/{}".format(dones, episodes))
 
 def parse_state(state):
-    goal = np.argwhere(state == 2)
+    start = np.argwhere(state == 2)[0]
     state[state == 2] = 0
 
-    start = np.argwhere(state == 3)
-    state[state == 3] = 0
+    goal = state == 3
+    state[goal] = 0
 
-    return state, create_goal_grid(state.shape, goal), start[0]
+    return state, create_goal_grid(state.shape, goal), start
 
 def create_goal_grid(shape, goal):
     goal_grid = np.zeros(shape, dtype=np.int8)
